@@ -25,8 +25,9 @@ jobs:
         shell: pwsh
         run: |
           $xmlContent = Get-Content BetterGenshinImpact/BetterGenshinImpact.csproj
-          $version = ($xmlContent | Select-String -Pattern '<AssemblyVersion>(.*)</AssemblyVersion>').Matches.Groups[1].Value
+          $version = ($xmlContent | Select-String -Pattern 'AssemblyVersion\>(.*)\<\/AssemblyVersion').Matches.Groups[1].Value
           echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+          echo "::notice::Version number is: $version"  # 显示为通知
       - run: dotnet publish -c Release -p:PublishProfile=FolderProfile
         continue-on-error: true
       - uses: actions/upload-artifact@v4
@@ -105,4 +106,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: publish
-          path: dist/BetterGI/BetterGI_*
+          path: dist/BetterGI_*
