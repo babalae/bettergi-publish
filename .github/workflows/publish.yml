@@ -20,6 +20,11 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/BetterGenshinImpact.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
+      - name: Extract version number
+        id: extract_version
+        run: |
+          VERSION=$(sed -n 's/.*<AssemblyVersion>\(.*\)<\/AssemblyVersion>.*/\1/p' BetterGenshinImpact/BetterGenshinImpact.csproj)
+          echo "##[set-output name=VERSION;$VERSION]"
       - run: dotnet publish -c Release -p:PublishProfile=FolderProfile
         continue-on-error: true
       - uses: actions/upload-artifact@v4
@@ -93,9 +98,8 @@ jobs:
             fi
           done
 
-          VERSION=$(sed -n 's/.*<AssemblyVersion>\(.*\)<\/AssemblyVersion>.*/\1/p' BetterGenshinImpact/BetterGenshinImpact/BetterGenshinImpact.csproj)
           cd dist
-          7z a "BetterGI_v$VERSION.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
+          7z a "BetterGI_v${{ steps.extract_version.outputs.VERSION }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
       - uses: actions/upload-artifact@v4
         with:
           name: publish
