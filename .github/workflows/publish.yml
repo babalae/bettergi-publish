@@ -93,7 +93,7 @@ jobs:
             fi
           done
 
-          VERSION=$(sed -n 's/.*<AssemblyVersion>\(.*\)<\/AssemblyVersion>.*/\1/p' BetterGenshinImpact/BetterGenshinImpact.csproj)
+          VERSION=$(sed -n 's/.*<AssemblyVersion>\(.*\)<\/AssemblyVersion>.*/\1/p' BetterGenshinImpact/BetterGenshinImpact/BetterGenshinImpact.csproj)
           cd dist
           7z a "BetterGI_v$VERSION.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
       - uses: actions/upload-artifact@v4
