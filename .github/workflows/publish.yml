@@ -102,7 +102,7 @@ jobs:
           done
 
           cd dist
-          7z a "BetterGI_v${{ steps.extract_version.outputs.VERSION }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
+          7z a "BetterGI_v${{ needs.build_main.outputs.VERSION }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
       - uses: actions/upload-artifact@v4
         with:
           name: publish
