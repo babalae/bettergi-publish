@@ -93,9 +93,10 @@ jobs:
             fi
           done
 
-          cd dist/BetterGI
-          7z a publish.7z * -t7z -mx=5 -mf=BCJ2 -r -y
+          VERSION=$(sed -n 's/.*<AssemblyVersion>\(.*\)<\/AssemblyVersion>.*/\1/p' BetterGenshinImpact/BetterGenshinImpact.csproj)
+          cd dist
+          7z a "BetterGI_v$VERSION.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
       - uses: actions/upload-artifact@v4
         with:
           name: publish
-          path: dist/BetterGI/publish.7z
+          path: dist/BetterGI/BetterGI_*
