@@ -22,9 +22,11 @@ jobs:
             ${{ runner.os }}-nuget-
       - name: Extract version number
         id: extract_version
+        shell: pwsh
         run: |
-          VERSION=$(sed -n 's/.*<AssemblyVersion>\(.*\)<\/AssemblyVersion>.*/\1/p' BetterGenshinImpact/BetterGenshinImpact.csproj)
-          echo "##[set-output name=VERSION;$VERSION]"
+          $xmlContent = Get-Content BetterGenshinImpact/BetterGenshinImpact.csproj
+          $version = ($xmlContent | Select-String -Pattern '<AssemblyVersion>(.*)</AssemblyVersion>').Matches.Groups[1].Value
+          echo "VERSION=$version" >> $env:GITHUB_OUTPUT
       - run: dotnet publish -c Release -p:PublishProfile=FolderProfile
         continue-on-error: true
       - uses: actions/upload-artifact@v4
