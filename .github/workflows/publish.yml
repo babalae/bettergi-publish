@@ -118,6 +118,7 @@ jobs:
           ..\kachina-builder.exe pack -c ../kachina.config.json -m metadata.json -d hashed -o BetterGI.Install.${{ needs.build_main.outputs.version }}.exe
       - name: Generate archive
         run: |
+          cd dist
           7z a dfs.tar hashed/ metadata.json -r -y
           7z a "BetterGI_v${{ needs.build_main.outputs.version }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
       - uses: actions/upload-artifact@v4
