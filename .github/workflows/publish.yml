@@ -96,19 +96,10 @@ jobs:
           path: dist/BetterGI/Assets/Web/ScriptRepo
       - name: download hdiffz
         run: |
-          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/sisong/HDiffPatch/releases/latest"
-          $downloadUrl = $response.assets | Where-Object { $_.name -like "*windows64*.zip" } | Select-Object -ExpandProperty browser_download_url
-          $zipFilePath = "hdiffpatch_windows64.zip"
-          $outputFolder = "hdiffpatch"
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
+          $downloadUrl = $response.assets | Where-Object { $_.name -like "kachina-builder.exe" } | Select-Object -ExpandProperty browser_download_url
+          $zipFilePath = "kachina-builder.exe"
           Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
-          if (-Not (Test-Path -Path $outputFolder)) {
-              New-Item -ItemType Directory -Path $outputFolder
-          }
-          Expand-Archive -Path $zipFilePath -DestinationPath $outputFolder -Force
-          $exeFile = Get-ChildItem -Path $searchPath -Recurse -File -Filter "hdiffz.exe" | Select-Object -First 1
-          Move-Item -Path $exeFile.FullName -Destination . -Force
-          Remove-Item -Path $outputFolder -Recurse -Force
-          Remove-Item -Path $zipFilePath
       - run: |
           Get-ChildItem -Filter *.zst | ForEach-Object {
               if ($_.PSIsContainer -eq $false) {
@@ -118,8 +109,9 @@ jobs:
                   Write-Host "$file -> $output_file"
               }
           }
-
           cd dist
+          ..\kachina-builder.exe gen -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_main.outputs.version }} --diff-ignore *[.txt,.onnx]
+          7z a dfs.tar hashed/ metadata.json -r -y
           7z a "BetterGI_v${{ needs.build_main.outputs.version }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
       - uses: actions/upload-artifact@v4
         with:
