@@ -94,13 +94,8 @@ jobs:
         with:
           name: scripts
           path: dist/BetterGI/Assets/Web/ScriptRepo
-      - name: download hdiffz
+      - name: Extract Map
         run: |
-          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
-          $downloadUrl = $response.assets | Where-Object { $_.name -like "kachina-builder.exe" } | Select-Object -ExpandProperty browser_download_url
-          $zipFilePath = "kachina-builder.exe"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
-      - run: |
           Get-ChildItem -Filter *.zst | ForEach-Object {
               if ($_.PSIsContainer -eq $false) {
                   $file = $_.Name
@@ -109,11 +104,31 @@ jobs:
                   Write-Host "$file -> $output_file"
               }
           }
+      - name: Download kachina-builder
+        run: |
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
+          $downloadUrl = $response.assets | Where-Object { $_.name -like "kachina-builder.exe" } | Select-Object -ExpandProperty browser_download_url
+          $zipFilePath = "kachina-builder.exe"
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
+      - name: Pack kachina-builder
+        run: |
           cd dist
           ..\kachina-builder.exe gen -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_main.outputs.version }} --diff-ignore *[.txt,.onnx]
+          ..\kachina-builder.exe pack -c ../kachina.config.json -o BetterGI/BetterGI.update.exe
+          ..\kachina-builder.exe pack -c ../kachina.config.json -m metadata.json -d hashed -o BetterGI.Install.${{ needs.build_main.outputs.version }}.exe
+      - name: Generate archive
+        run: |
           7z a dfs.tar hashed/ metadata.json -r -y
           7z a "BetterGI_v${{ needs.build_main.outputs.version }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
       - uses: actions/upload-artifact@v4
         with:
           name: publish
-          path: dist/BetterGI_*
+          path: dist/BetterGI_*.7z
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dfs
+          path: dist/dfs.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer
+          path: dist/BetterGI.Install.*.exe
