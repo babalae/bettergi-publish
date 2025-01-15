@@ -94,6 +94,21 @@ jobs:
         with:
           name: scripts
           path: dist/BetterGI/Assets/Web/ScriptRepo
+      - name: download hdiffz
+        run: |
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/sisong/HDiffPatch/releases/latest"
+          $downloadUrl = $response.assets | Where-Object { $_.name -like "*windows64*.zip" } | Select-Object -ExpandProperty browser_download_url
+          $zipFilePath = "hdiffpatch_windows64.zip"
+          $outputFolder = "hdiffpatch"
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
+          if (-Not (Test-Path -Path $outputFolder)) {
+              New-Item -ItemType Directory -Path $outputFolder
+          }
+          Expand-Archive -Path $zipFilePath -DestinationPath $outputFolder -Force
+          $exeFile = Get-ChildItem -Path $searchPath -Recurse -File -Filter "hdiffz.exe" | Select-Object -First 1
+          Move-Item -Path $exeFile.FullName -Destination . -Force
+          Remove-Item -Path $outputFolder -Recurse -Force
+          Remove-Item -Path $zipFilePath
       - run: |
           Get-ChildItem -Filter *.zst | ForEach-Object {
               if ($_.PSIsContainer -eq $false) {
