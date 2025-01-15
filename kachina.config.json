@@ -1,0 +1,15 @@
+{
+    "dfsPath": "bgi",
+    "appName": "BetterGI",
+    "publisher": "babalae",
+    "regName": "BetterGI",
+    "exeName": "BetterGI.exe",
+    "uninstallName": "BetterGI.uninst.exe",
+    "updaterName": "BetterGI.update.exe",
+    "programFilesPath": "BetterGI",
+    "title": "BetterGI",
+    "description": "更好的原神，免费且开源",
+    "windowTitle": "BetterGI 安装程序",
+    "userDataPath": ["${INSTALL_PATH}/User"],
+    "extraUninstallPath": ["${INSTALL_PATH}/log"]
+}
