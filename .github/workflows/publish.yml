@@ -33,6 +33,11 @@ jobs:
       - name: Build application
         run: dotnet publish BetterGenshinImpact/BetterGenshinImpact.csproj -c Release -p:PublishProfile=FolderProfile
         continue-on-error: true
+      - name: Clear Files
+        run: |
+            Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*.lib" | Remove-Item -Force
+            Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*ffmpeg*.dll" | Remove-Item -Force
+            Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*.pdb" | Remove-Item -Force
       - uses: actions/upload-artifact@v4
         with:
           name: main
@@ -73,7 +78,7 @@ jobs:
           path: dist/
 
   pack:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: [build_main, build_map_editor, build_scripts]
     steps:
       - uses: actions/checkout@v4
@@ -90,19 +95,14 @@ jobs:
           name: scripts
           path: dist/BetterGI/Assets/Web/ScriptRepo
       - run: |
-          find "dist/BetterGI" -type f -name "*.lib" -exec rm -f {} \;
-          find "dist/BetterGI" -type f -name "*ffmpeg*.dll" -exec rm -f {} \;
-      - run: |
-          sudo apt update
-          sudo apt install zstd p7zip-full -y
-
-          for file in *.zst; do
-            if [ -f "$file" ]; then
-              output_file="dist/BetterGI/Assets/Map/${file%.zst}"
-              zstd -d "$file" -o "$output_file"
-              echo "$file -> $output_file"
-            fi
-          done
+          Get-ChildItem -Filter *.zst | ForEach-Object {
+              if ($_.PSIsContainer -eq $false) {
+                  $file = $_.Name
+                  $output_file = "dist\BetterGI\Assets\Map\$($file -replace '.zst$', '')"
+                  & zstd -d $file -o $output_file
+                  Write-Host "$file -> $output_file"
+              }
+          }
 
           cd dist
           7z a "BetterGI_v${{ needs.build_main.outputs.version }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
