@@ -29,8 +29,9 @@ jobs:
           $xmlContent = Get-Content BetterGenshinImpact/BetterGenshinImpact.csproj
           $version = ($xmlContent | Select-String -Pattern 'AssemblyVersion\>(.*)\<\/AssemblyVersion').Matches.Groups[1].Value
           echo "version=$version" >> $env:GITHUB_OUTPUT
-          echo "::notice::Version number is: $version"  # ÏÔÊ¾ÎªÍ¨Öª
-      - run: dotnet publish -c Release -p:PublishProfile=FolderProfile
+          echo "::notice::Version number is: $version"
+      - name: Build application
+        run: dotnet publish BetterGenshinImpact/BetterGenshinImpact.csproj -c Release -p:PublishProfile=FolderProfile
         continue-on-error: true
       - uses: actions/upload-artifact@v4
         with:
