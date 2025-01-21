@@ -127,7 +127,7 @@ jobs:
       - name: Unpack BetterGI_*.7z
         run: |
           cd dist
-          7z x "BetterGI_${{ needs.build_dist.outputs.version }}.7z" -o.
+          7z x "BetterGI_${{ needs.build_dist.outputs.version }}.7z" -o./
       - name: Download kachina-builder
         run: |
           $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
