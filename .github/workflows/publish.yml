@@ -68,17 +68,31 @@ jobs:
       - name: Build application
         run: dotnet publish BetterGenshinImpact/BetterGenshinImpact.csproj -c Release -p:PublishProfile=FolderProfile
         continue-on-error: true
-      - name: Clear & Move Files
+      - name: 🧹 Clear & Move Files
         run: |
-            Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*.lib" | Remove-Item -Force
-            Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*ffmpeg*.dll" | Remove-Item -Force
-            Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*.pdb" | Remove-Item -Force
+            $sourceDir = ".\BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64"
+            Get-ChildItem -Path $sourceDir -Recurse -Filter "*.lib" | Remove-Item -Force
+            Get-ChildItem -Path $sourceDir -Recurse -Filter "*ffmpeg*.dll" | Remove-Item -Force
+            Get-ChildItem -Path $sourceDir -Recurse -Filter "*.pdb" | Remove-Item -Force
             New-Item -Path "dist/BetterGI" -ItemType Directory
-            $files = Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -File
-            foreach ($file in $files) {
-                Move-Item -Path $file.FullName -Destination "dist/BetterGI" -Force
+
+            try {
+                $items = Get-ChildItem -Path $sourceDir -Recurse
+                
+                foreach ($item in $items) {
+                    $destinationPath = Join-Path ".\dist\BetterGI" $item.Name
+                    
+                    try {
+                        Move-Item -Path $item.FullName -Destination $destinationPath -Force
+                        Write-Host "已移动: $($item.Name)"
+                    } catch {
+                        Write-Host "移动 $($item.Name) 时出错: $_"
+                    }
+                }
+                Write-Host "所有内容已成功移动到 dist\BetterGI 文件夹中"
+            } catch {
+                Write-Host "处理文件时出错: $_"
             }
-            Write-Host "所有内容已成功移动到 dist\BetterGI 文件夹中"
       - name: Extract Map
         run: |
           Get-ChildItem -Filter *.zst | ForEach-Object {
@@ -104,11 +118,11 @@ jobs:
           $downloadUrl = $response.assets | Where-Object { $_.name -like "kachina-builder.exe" } | Select-Object -ExpandProperty browser_download_url
           $zipFilePath = "kachina-builder.exe"
           Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
-      - name: Pack kachina-builder
+      - name: 📦 Pack kachina-builder
         run: |
           cd dist
           ..\kachina-builder.exe pack -c ../kachina.config.json -o BetterGI/BetterGI.update.exe
-      - name: Generate archive
+      - name: 📦 Generate archive
         run: |
           cd dist
           7z a "BetterGI_v${{  steps.extract_version.outputs.version }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
