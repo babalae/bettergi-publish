@@ -75,40 +75,7 @@ jobs:
             Get-ChildItem -Path $sourceDir -Recurse -Filter "*ffmpeg*.dll" | Remove-Item -Force
             Get-ChildItem -Path $sourceDir -Recurse -Filter "*.pdb" | Remove-Item -Force
             New-Item -Path "dist/BetterGI" -ItemType Directory
-
-            try {
-                $items = Get-ChildItem -Path $sourceDir -Recurse
-                
-                foreach ($item in $items) {
-                    # Get the relative path by removing the source directory path
-                    $relativePath = $item.FullName.Substring($sourceDir.Length + 1)
-                    $destinationPath = Join-Path ".\dist\BetterGI" $relativePath
-                    
-                    # Create the destination directory if it doesn't exist
-                    if ($item.PSIsContainer) {
-                        if (!(Test-Path $destinationPath)) {
-                            New-Item -Path $destinationPath -ItemType Directory -Force
-                        }
-                        continue
-                    }
-                    
-                    # Ensure the parent directory exists
-                    $parentDir = Split-Path -Parent $destinationPath
-                    if (!(Test-Path $parentDir)) {
-                        New-Item -Path $parentDir -ItemType Directory -Force
-                    }
-                    
-                    try {
-                        Copy-Item -Path $item.FullName -Destination $destinationPath -Force
-                        Write-Host "已复制: $relativePath"
-                    } catch {
-                        Write-Host "复制 $relativePath 时出错: $_"
-                    }
-                }
-                Write-Host "所有内容已成功复制到 dist\BetterGI 文件夹中"
-            } catch {
-                Write-Host "处理文件时出错: $_"
-            }
+            xcopy "$sourceDir\*" ".\dist\BetterGI\" /E /H /I /Y
       - name: 🗜️ Extract Map
         run: |
           Get-ChildItem -Filter *.zst | ForEach-Object {
