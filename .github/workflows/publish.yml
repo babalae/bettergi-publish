@@ -46,9 +46,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          repository: babalae/bettergi-publish
-      - uses: actions/checkout@v4
-        with:
           repository: babalae/better-genshin-impact
       - uses: actions/setup-dotnet@v4
         with:
@@ -79,9 +76,13 @@ jobs:
             Get-ChildItem -Path $sourceDir -Recurse -Filter "*.pdb" | Remove-Item -Force
             New-Item -Path "dist/BetterGI" -ItemType Directory
             xcopy "$sourceDir\*" ".\dist\BetterGI\" /E /H /I /Y
+      - uses: actions/checkout@v4
+        with:
+          repository: babalae/bettergi-publish
+          path: publish
       - name: 🗜️ Extract Map
         run: |
-          Get-ChildItem -Filter *.zst | ForEach-Object {
+          Get-ChildItem -Filter publish\*.zst | ForEach-Object {
               if ($_.PSIsContainer -eq $false) {
                   $file = $_.Name
                   $output_file = "dist\BetterGI\Assets\Map\$($file -replace '.zst$', '')"
@@ -107,7 +108,7 @@ jobs:
       - name: 📦 Pack kachina-builder
         run: |
           cd dist
-          ..\kachina-builder.exe pack -c ../kachina.config.json -o BetterGI/BetterGI.update.exe
+          ..\kachina-builder.exe pack -c ..\publish\kachina.config.json -o BetterGI/BetterGI.update.exe
       - name: 📦 Generate archive
         run: |
           cd dist
