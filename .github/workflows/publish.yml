@@ -45,6 +45,8 @@ jobs:
       version: ${{ steps.extract_version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          repository: babalae/bettergi-publish
       - uses: actions/checkout@v4
         with:
           repository: babalae/better-genshin-impact
@@ -127,7 +129,7 @@ jobs:
       - name: Unpack BetterGI_*.7z
         run: |
           cd dist
-          7z x "BetterGI_${{ needs.build_dist.outputs.version }}.7z" -o./
+          7z x "BetterGI_v${{ needs.build_dist.outputs.version }}.7z"
       - name: Download kachina-builder
         run: |
           $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
@@ -151,3 +153,30 @@ jobs:
         with:
           name: BetterGI.Install
           path: dist/BetterGI.Install.*.exe
+
+  # gen_mica_setup:
+  #   runs-on: windows-latest
+  #   needs: [build_dist]
+  #   steps:
+  #     - uses: actions/download-artifact@v4
+  #       with:
+  #         name: BetterGI_7z
+  #         path: dist
+  #     - name: Unpack BetterGI_*.7z
+  #       run: |
+  #         cd dist
+  #         7z x "BetterGI_${{ needs.build_dist.outputs.version }}.7z" -o./
+  #     - name: Download kachina-builder
+  #       run: |
+  #         $response = Invoke-RestMethod -Uri "https://api.github.com/repos/lemutec/MicaSetup/releases/latest"
+  #         $downloadUrl = $response.assets | Where-Object { $_.name -like "MicaSetup_v*.exe" } | Select-Object -ExpandProperty browser_download_url
+  #         $zipFilePath = "MicaSetup.exe"
+  #         Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
+  #     - name: 📦 Pack MicaSetup
+  #       run: |
+  #         cd dist
+  #         ..\makemica micasetup.json
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: BetterGI.Install
+  #         path: dist/BetterGI.Install.*.exe
