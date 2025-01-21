@@ -4,8 +4,43 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_main:
+  build_web_map_editor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: huiyadanli/bettergi-map
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build:single
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web_map_editor
+          path: dist/
+
+  build_web_scripts_list:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: huiyadanli/bettergi-scripts-web
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install
+      - run: npm run build:single
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web_scripts_list
+          path: dist/
+  
+  build_dist:
     runs-on: windows-latest
+    needs: [build_web_map_editor, build_web_scripts_list]
     outputs:
       version: ${{ steps.extract_version.outputs.version }}
     steps:
@@ -33,67 +68,17 @@ jobs:
       - name: Build application
         run: dotnet publish BetterGenshinImpact/BetterGenshinImpact.csproj -c Release -p:PublishProfile=FolderProfile
         continue-on-error: true
-      - name: Clear Files
+      - name: Clear & Move Files
         run: |
             Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*.lib" | Remove-Item -Force
             Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*ffmpeg*.dll" | Remove-Item -Force
             Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -Recurse -Filter "*.pdb" | Remove-Item -Force
-      - uses: actions/upload-artifact@v4
-        with:
-          name: main
-          path: BetterGenshinImpact/bin/x64/Release/net8.0-windows10.0.22621.0/publish/win-x64/
-
-  build_map_editor:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: huiyadanli/bettergi-map
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-      - run: npm install
-      - run: npm run build:single
-      - uses: actions/upload-artifact@v4
-        with:
-          name: map_editor
-          path: dist/
-
-  build_scripts:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: huiyadanli/bettergi-scripts-web
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-      - run: npm install
-      - run: npm run build:single
-      - uses: actions/upload-artifact@v4
-        with:
-          name: scripts
-          path: dist/
-
-  pack:
-    runs-on: windows-latest
-    needs: [build_main, build_map_editor, build_scripts]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: main
-          path: dist/BetterGI
-      - uses: actions/download-artifact@v4
-        with:
-          name: map_editor
-          path: dist/BetterGI/Assets/Map/Editor
-      - uses: actions/download-artifact@v4
-        with:
-          name: scripts
-          path: dist/BetterGI/Assets/Web/ScriptRepo
+            New-Item -Path "dist/BetterGI" -ItemType Directory
+            $files = Get-ChildItem -Path "BetterGenshinImpact\bin\x64\Release\net8.0-windows10.0.22621.0\publish\win-x64" -File
+            foreach ($file in $files) {
+                Move-Item -Path $file.FullName -Destination "dist/BetterGI" -Force
+            }
+            Write-Host "所有内容已成功移动到 dist\BetterGI 文件夹中"
       - name: Extract Map
         run: |
           Get-ChildItem -Filter *.zst | ForEach-Object {
@@ -104,6 +89,15 @@ jobs:
                   Write-Host "$file -> $output_file"
               }
           }
+      # 下载前面构建好的web内容
+      - uses: actions/download-artifact@v4
+        with:
+          name: web_map_editor
+          path: dist/BetterGI/Assets/Map/Editor
+      - uses: actions/download-artifact@v4
+        with:
+          name: web_scripts_list
+          path: dist/BetterGI/Assets/Web/ScriptRepo
       - name: Download kachina-builder
         run: |
           $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
@@ -113,23 +107,49 @@ jobs:
       - name: Pack kachina-builder
         run: |
           cd dist
-          ..\kachina-builder.exe gen -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_main.outputs.version }} --diff-ignore *[.txt,.onnx]
           ..\kachina-builder.exe pack -c ../kachina.config.json -o BetterGI/BetterGI.update.exe
-          ..\kachina-builder.exe pack -c ../kachina.config.json -m metadata.json -d hashed -o BetterGI.Install.${{ needs.build_main.outputs.version }}.exe
+      - name: Generate archive
+        run: |
+          cd dist
+          7z a "BetterGI_v${{  steps.extract_version.outputs.version }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BetterGI_7z
+          path: dist/BetterGI_*.7z
+
+  gen_kachina_installer:
+    runs-on: windows-latest
+    needs: [build_dist]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: BetterGI_7z
+          path: dist
+      - name: Unpack BetterGI_*.7z
+        run: |
+          cd dist
+          7z x "BetterGI_${{ needs.build_dist.outputs.version }}.7z" -o.
+      - name: Download kachina-builder
+        run: |
+          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
+          $downloadUrl = $response.assets | Where-Object { $_.name -like "kachina-builder.exe" } | Select-Object -ExpandProperty browser_download_url
+          $zipFilePath = "kachina-builder.exe"
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
+      - name: Pack kachina-builder
+        run: |
+          cd dist
+          ..\kachina-builder.exe gen -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_dist.outputs.version }} --diff-ignore *[.txt,.onnx]
+          ..\kachina-builder.exe pack -c ../kachina.config.json -m metadata.json -d hashed -o BetterGI.Install.${{ needs.build_dist.outputs.version }}.exe
       - name: Generate archive
         run: |
           cd dist
           7z a dfs.tar hashed/ metadata.json -r -y
-          7z a "BetterGI_v${{ needs.build_main.outputs.version }}.7z" BetterGI -t7z -mx=5 -mf=BCJ2 -r -y
-      - uses: actions/upload-artifact@v4
-        with:
-          name: publish
-          path: dist/BetterGI_*.7z
       - uses: actions/upload-artifact@v4
         with:
           name: dfs
           path: dist/dfs.tar
       - uses: actions/upload-artifact@v4
         with:
-          name: installer
+          name: BetterGI.Install
           path: dist/BetterGI.Install.*.exe
