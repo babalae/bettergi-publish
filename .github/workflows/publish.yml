@@ -80,16 +80,32 @@ jobs:
                 $items = Get-ChildItem -Path $sourceDir -Recurse
                 
                 foreach ($item in $items) {
-                    $destinationPath = Join-Path ".\dist\BetterGI" $item.Name
+                    # Get the relative path by removing the source directory path
+                    $relativePath = $item.FullName.Substring($sourceDir.Length + 1)
+                    $destinationPath = Join-Path ".\dist\BetterGI" $relativePath
+                    
+                    # Create the destination directory if it doesn't exist
+                    if ($item.PSIsContainer) {
+                        if (!(Test-Path $destinationPath)) {
+                            New-Item -Path $destinationPath -ItemType Directory -Force
+                        }
+                        continue
+                    }
+                    
+                    # Ensure the parent directory exists
+                    $parentDir = Split-Path -Parent $destinationPath
+                    if (!(Test-Path $parentDir)) {
+                        New-Item -Path $parentDir -ItemType Directory -Force
+                    }
                     
                     try {
-                        Move-Item -Path $item.FullName -Destination $destinationPath -Force
-                        Write-Host "已移动: $($item.Name)"
+                        Copy-Item -Path $item.FullName -Destination $destinationPath -Force
+                        Write-Host "已复制: $relativePath"
                     } catch {
-                        Write-Host "移动 $($item.Name) 时出错: $_"
+                        Write-Host "复制 $relativePath 时出错: $_"
                     }
                 }
-                Write-Host "所有内容已成功移动到 dist\BetterGI 文件夹中"
+                Write-Host "所有内容已成功复制到 dist\BetterGI 文件夹中"
             } catch {
                 Write-Host "处理文件时出错: $_"
             }
