@@ -76,6 +76,15 @@ jobs:
             Get-ChildItem -Path $sourceDir -Recurse -Filter "*.pdb" | Remove-Item -Force
             New-Item -Path "dist/BetterGI" -ItemType Directory
             xcopy "$sourceDir\*" ".\dist\BetterGI\" /E /H /I /Y
+      # 下载前面构建好的web内容
+      - uses: actions/download-artifact@v4
+        with:
+          name: web_map_editor
+          path: dist/BetterGI/Assets/Map/Editor
+      - uses: actions/download-artifact@v4
+        with:
+          name: web_scripts_list
+          path: dist/BetterGI/Assets/Web/ScriptRepo
       - uses: actions/checkout@v4
         with:
           repository: babalae/bettergi-publish
@@ -91,22 +100,13 @@ jobs:
                   Write-Host "$file -> $output_file"
               }
           }
-      # 下载前面构建好的web内容
-      - uses: actions/download-artifact@v4
-        with:
-          name: web_map_editor
-          path: dist/BetterGI/Assets/Map/Editor
-      - uses: actions/download-artifact@v4
-        with:
-          name: web_scripts_list
-          path: dist/BetterGI/Assets/Web/ScriptRepo
       - name: 📥 Download kachina-builder
         run: |
           $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
           $downloadUrl = $response.assets | Where-Object { $_.name -like "kachina-builder.exe" } | Select-Object -ExpandProperty browser_download_url
           $zipFilePath = "kachina-builder.exe"
           Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
-      - name: 📦 Pack kachina-builder
+      - name: 📦 Gen Updater by kachina-builder
         run: |
           cd dist
           ..\kachina-builder.exe pack -c ..\publish\kachina.config.json -o BetterGI/BetterGI.update.exe
@@ -168,7 +168,7 @@ jobs:
   #       run: |
   #         cd dist
   #         7z x "BetterGI_${{ needs.build_dist.outputs.version }}.7z" -o./
-  #     - name: Download kachina-builder
+  #     - name: Download MicaSetup
   #       run: |
   #         $response = Invoke-RestMethod -Uri "https://api.github.com/repos/lemutec/MicaSetup/releases/latest"
   #         $downloadUrl = $response.assets | Where-Object { $_.name -like "MicaSetup_v*.exe" } | Select-Object -ExpandProperty browser_download_url
