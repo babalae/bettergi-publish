@@ -85,12 +85,14 @@ jobs:
         with:
           name: web_scripts_list
           path: dist/BetterGI/Assets/Web/ScriptRepo
+      # 下载构建 repo 的内容补充数据
       - uses: actions/checkout@v4
         with:
           repository: babalae/bettergi-publish
           path: publish
       - name: 🗜️ Extract Map
         run: |
+          New-Item -Path "dist/BetterGI/Assets/Map" -ItemType Directory
           cd publish
           Get-ChildItem -Filter *.zst | ForEach-Object {
               if ($_.PSIsContainer -eq $false) {
@@ -100,6 +102,7 @@ jobs:
                   Write-Host "$file -> $output_file"
               }
           }
+      # 生成更新器
       - name: 📥 Download kachina-builder
         run: |
           $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
@@ -110,6 +113,7 @@ jobs:
         run: |
           cd dist
           ..\kachina-builder.exe pack -c ..\publish\kachina.config.json -o BetterGI/BetterGI.update.exe
+      # 打包上传
       - name: 📦 Generate archive
         run: |
           cd dist
