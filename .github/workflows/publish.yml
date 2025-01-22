@@ -171,17 +171,18 @@ jobs:
   #     - name: Unpack BetterGI_*.7z
   #       run: |
   #         cd dist
-  #         7z x "BetterGI_${{ needs.build_dist.outputs.version }}.7z" -o./
+  #         7z x "BetterGI_${{ needs.build_dist.outputs.version }}.7z"
   #     - name: Download MicaSetup
   #       run: |
   #         $response = Invoke-RestMethod -Uri "https://api.github.com/repos/lemutec/MicaSetup/releases/latest"
-  #         $downloadUrl = $response.assets | Where-Object { $_.name -like "MicaSetup_v*.exe" } | Select-Object -ExpandProperty browser_download_url
+  #         $downloadUrl = $response.assets | Where-Object { $_.name -like "MicaSetup_v*.7z" } | Select-Object -ExpandProperty browser_download_url
   #         $zipFilePath = "MicaSetup.exe"
   #         Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
+  #         7z x $zipFilePath
   #     - name: 📦 Pack MicaSetup
   #       run: |
   #         cd dist
-  #         ..\makemica micasetup.json
+  #         ..\makemica.exe micasetup.json
   #     - uses: actions/upload-artifact@v4
   #       with:
   #         name: BetterGI_Setup
