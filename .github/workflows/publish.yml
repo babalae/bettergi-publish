@@ -103,11 +103,11 @@ jobs:
           }
       # 生成更新器
       - name: 📥 Download kachina-builder
-        run: |
-          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
-          $downloadUrl = $response.assets | Where-Object { $_.name -like "kachina-builder.exe" } | Select-Object -ExpandProperty browser_download_url
-          $zipFilePath = "kachina-builder.exe"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "YuehaiTeam/kachina-installer"
+          latest: true
+          fileName: "kachina-builder.exe"
       - name: 📦 Gen Updater by kachina-builder
         run: |
           cd dist
@@ -135,12 +135,12 @@ jobs:
         run: |
           cd dist
           7z x "BetterGI_v${{ needs.build_dist.outputs.version }}.7z"
-      - name: Download kachina-builder
-        run: |
-          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/YuehaiTeam/kachina-installer/releases/latest"
-          $downloadUrl = $response.assets | Where-Object { $_.name -like "kachina-builder.exe" } | Select-Object -ExpandProperty browser_download_url
-          $zipFilePath = "kachina-builder.exe"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
+      - name: 📥 Download kachina-builder
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "YuehaiTeam/kachina-installer"
+          latest: true
+          fileName: "kachina-builder.exe"
       - name: 📦 Pack kachina-builder
         run: |
           cd dist
@@ -172,13 +172,19 @@ jobs:
         run: |
           cd dist
           7z x "BetterGI_v${{ needs.build_dist.outputs.version }}.7z"
-      - name: Download MicaSetup
-        run: |
-          $response = Invoke-RestMethod -Uri "https://api.github.com/repos/lemutec/MicaSetup/releases/latest"
-          $downloadUrl = $response.assets | Where-Object { $_.name -like "MicaSetup_v*.7z" } | Select-Object -ExpandProperty browser_download_url
-          $zipFilePath = "MicaSetup.7z"
-          Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
-          7z x $zipFilePath
+      - name: 📥 Download MicaSetup
+        # run: |
+        #   $response = Invoke-RestMethod -Uri "https://api.github.com/repos/lemutec/MicaSetup/releases/latest"
+        #   $downloadUrl = $response.assets | Where-Object { $_.name -like "MicaSetup_v*.7z" } | Select-Object -ExpandProperty browser_download_url
+        #   $zipFilePath = "MicaSetup.7z"
+        #   Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
+        #   7z x $zipFilePath
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "lemutec/MicaSetup"
+          latest: true
+          fileName: "MicaSetup_v*.7z"
+          extract: true
       - name: 📦 Pack MicaSetup
         run: |
           7z a -t7z "publish.7z" dist/BetterGI/*
