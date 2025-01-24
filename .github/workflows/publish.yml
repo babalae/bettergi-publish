@@ -168,10 +168,12 @@ jobs:
         with:
           name: BetterGI_7z
           path: dist
-      - name: Unpack BetterGI_*.7z
+      - name: Unpack BetterGI_*.7z & Repack
         run: |
           cd dist
           7z x "BetterGI_v${{ needs.build_dist.outputs.version }}.7z"
+          cd BetterGI
+          7z a -t7z "..\..\publish.7z" *
       - name: 📥 Download MicaSetup
         # run: |
         #   $response = Invoke-RestMethod -Uri "https://api.github.com/repos/lemutec/MicaSetup/releases/latest"
@@ -190,7 +192,6 @@ jobs:
           foreach ($archive in $archiveFiles) {
               & 7z x $archive.FullName
           }
-          7z a -t7z "publish.7z" -w"dist/BetterGI" *
           .\makemica.exe micasetup.json
           ren BetterGI_Setup.exe BetterGI_Setup_v${{ needs.build_dist.outputs.version }}.exe
       - uses: actions/upload-artifact@v4
