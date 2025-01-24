@@ -14,7 +14,7 @@
   "LicenseFile": "LICENSE",
   "License": null,
   "LicenseType": null,
-  "RequestExecutionLevel": "user",
+  "RequestExecutionLevel": "admin",
   "SingleInstanceMutex": null,
   "IsCreateDesktopShortcut": true,
   "IsCreateUninst": true,
