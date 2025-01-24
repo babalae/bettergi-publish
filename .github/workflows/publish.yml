@@ -196,4 +196,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: BetterGI_Setup
-          path: dist/BetterGI_Setup*.exe
+          path: BetterGI_Setup*.exe
