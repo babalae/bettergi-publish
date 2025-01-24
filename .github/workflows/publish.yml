@@ -153,7 +153,7 @@ jobs:
           cd last
           7z x "BetterGI*.7z" -otemp
           if (Test-Path -Path ".\temp\BetterGI" -PathType Container) {
-              Move-Item -Path ".\temp\BetterGI" -NewName ".\BetterGI"
+              Move-Item -Path ".\temp\BetterGI" -Destination ".\BetterGI"
           } else {
               Rename-Item -Path ".\temp" -NewName ".\BetterGI"
           }
