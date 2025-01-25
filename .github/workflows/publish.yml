@@ -141,10 +141,26 @@ jobs:
           repository: "YuehaiTeam/kachina-installer"
           latest: true
           fileName: "kachina-builder.exe"
+      - name: 📥 Download last release
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "babalae/better-genshin-impact"
+          latest: true
+          fileName: "BetterGI_v*.7z"
+          out-file-path: 'last'
+      - name: Unpack Last release
+        run: |
+          cd last
+          7z x "BetterGI*.7z" -otemp
+          if (Test-Path -Path ".\temp\BetterGI" -PathType Container) {
+              Move-Item -Path ".\temp\BetterGI" -Destination ".\BetterGI"
+          } else {
+              Rename-Item -Path ".\temp" -NewName ".\BetterGI"
+          }
       - name: 📦 Pack kachina-builder
         run: |
           cd dist
-          ..\kachina-builder.exe gen -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_dist.outputs.version }} --diff-ignore *[.txt,.onnx]
+          ..\kachina-builder.exe gen -j 6 -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_dist.outputs.version }} --diff-vers ..\last\BetterGI --diff-ignore *[.txt,.onnx] -u .\BetterGI\BetterGI.update.exe
           ..\kachina-builder.exe pack -c ../kachina.config.json -m metadata.json -d hashed -o BetterGI.Install.${{ needs.build_dist.outputs.version }}.exe
       - name: 📦 Generate archive
         run: |
@@ -175,12 +191,6 @@ jobs:
           cd BetterGI
           7z a -t7z "..\..\publish.7z" *
       - name: 📥 Download MicaSetup
-        # run: |
-        #   $response = Invoke-RestMethod -Uri "https://api.github.com/repos/lemutec/MicaSetup/releases/latest"
-        #   $downloadUrl = $response.assets | Where-Object { $_.name -like "MicaSetup_v*.7z" } | Select-Object -ExpandProperty browser_download_url
-        #   $zipFilePath = "MicaSetup.7z"
-        #   Invoke-WebRequest -Uri $downloadUrl -OutFile $zipFilePath
-        #   7z x $zipFilePath
         uses: robinraju/release-downloader@v1.8
         with:
           repository: "lemutec/MicaSetup"
