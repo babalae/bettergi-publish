@@ -160,7 +160,7 @@ jobs:
       - name: 📦 Pack kachina-builder
         run: |
           cd dist
-          ..\kachina-builder.exe gen -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_dist.outputs.version }} --diff-vers ..\last\BetterGI --diff-ignore *[.txt,.onnx]
+          ..\kachina-builder.exe gen -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_dist.outputs.version }} --diff-vers ..\last\BetterGI --diff-ignore *[.txt,.onnx] -u .\BetterGI\BetterGI.update.exe
           ..\kachina-builder.exe pack -c ../kachina.config.json -m metadata.json -d hashed -o BetterGI.Install.${{ needs.build_dist.outputs.version }}.exe
       - name: 📦 Generate archive
         run: |
