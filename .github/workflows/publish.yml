@@ -162,14 +162,6 @@ jobs:
           cd dist
           ..\kachina-builder.exe gen -j 6 -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_dist.outputs.version }} --diff-vers ..\last\BetterGI --diff-ignore *[.txt,.onnx] -u .\BetterGI\BetterGI.update.exe
           ..\kachina-builder.exe pack -c ../kachina.config.json -m metadata.json -d hashed -o BetterGI.Install.${{ needs.build_dist.outputs.version }}.exe
-      - name: 📦 Generate archive
-        run: |
-          cd dist
-          7z a dfs.tar hashed/ metadata.json -r -y
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dfs
-          path: dist/dfs.tar
       - uses: actions/upload-artifact@v4
         with:
           name: BetterGI_Install

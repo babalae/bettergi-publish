@@ -1,5 +1,5 @@
 {
-    "dfsPath": "bgi",
+    "source": "dfs+packed+https://77.cocogoat.cn/v2/dfs/bgi/BetterGI.Install.exe",
     "appName": "BetterGI",
     "publisher": "babalae",
     "regName": "BetterGI",
@@ -11,5 +11,6 @@
     "description": "更好的原神，免费且开源",
     "windowTitle": "BetterGI 安装程序",
     "userDataPath": ["${INSTALL_PATH}/User"],
-    "extraUninstallPath": ["${INSTALL_PATH}/log"]
+    "extraUninstallPath": ["${INSTALL_PATH}/log"],
+    "uacStrategy": "prefer-admin"
 }
