@@ -12,5 +12,6 @@
     "windowTitle": "BetterGI 安装程序",
     "userDataPath": ["${INSTALL_PATH}/User"],
     "extraUninstallPath": ["${INSTALL_PATH}/log"],
-    "uacStrategy": "prefer-admin"
+    "uacStrategy": "prefer-admin",
+    "runtimes": ["Microsoft.DotNet.DesktopRuntime.8"]
 }
