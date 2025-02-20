@@ -2,6 +2,15 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      kachina-channel:
+        type: choice
+        description: 'Kachina Installer Channel'
+        required: true
+        default: 'release'
+        options:
+          - release
+          - dev
 
 jobs:
   build_web_map_editor:
@@ -102,12 +111,25 @@ jobs:
               }
           }
       # 生成更新器
-      - name: 📥 Download kachina-builder
+      - name: 📥 Download kachina-builder release
+        if: ${{ github.event.inputs.kachina-channel == 'release' }}
         uses: robinraju/release-downloader@v1.8
         with:
           repository: "YuehaiTeam/kachina-installer"
           latest: true
           fileName: "kachina-builder.exe"
+          
+      - name: 📥 Download kachina-builder dev
+        if: ${{ github.event.inputs.kachina-channel == 'dev' }}
+        uses: dawidd6/action-download-artifact@v8
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          repo: "YuehaiTeam/kachina-installer"
+          workflow: "build.yml"
+          name: artifact
+          branch: main
+          event: push
+          workflow_conclusion: success
       - name: 📦 Gen Updater by kachina-builder
         run: |
           cd dist
@@ -135,12 +157,24 @@ jobs:
         run: |
           cd dist
           7z x "BetterGI_v${{ needs.build_dist.outputs.version }}.7z"
-      - name: 📥 Download kachina-builder
+      - name: 📥 Download kachina-builder release
+        if: ${{ github.event.inputs.kachina-channel == 'release' }}
         uses: robinraju/release-downloader@v1.8
         with:
           repository: "YuehaiTeam/kachina-installer"
           latest: true
           fileName: "kachina-builder.exe"
+      - name: 📥 Download kachina-builder dev
+        if: ${{ github.event.inputs.kachina-channel == 'dev' }}
+        uses: dawidd6/action-download-artifact@v8
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          repo: "YuehaiTeam/kachina-installer"
+          workflow: "build.yml"
+          name: artifact
+          branch: main
+          event: push
+          workflow_conclusion: success
       - name: 📥 Download last release
         uses: robinraju/release-downloader@v1.8
         with:
