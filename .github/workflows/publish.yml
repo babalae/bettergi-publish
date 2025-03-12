@@ -2,6 +2,15 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      kachina-channel:
+        type: choice
+        description: 'Kachina Installer Channel'
+        required: true
+        default: 'release'
+        options:
+          - release
+          - dev
 
 jobs:
   build_web_map_editor:
@@ -102,12 +111,25 @@ jobs:
               }
           }
       # 生成更新器
-      - name: 📥 Download kachina-builder
+      - name: 📥 Download kachina-builder release
+        if: ${{ github.event.inputs.kachina-channel == 'release' }}
         uses: robinraju/release-downloader@v1.8
         with:
           repository: "YuehaiTeam/kachina-installer"
           latest: true
           fileName: "kachina-builder.exe"
+          
+      - name: 📥 Download kachina-builder dev
+        if: ${{ github.event.inputs.kachina-channel == 'dev' }}
+        uses: dawidd6/action-download-artifact@v8
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          repo: "YuehaiTeam/kachina-installer"
+          workflow: "build.yml"
+          name: artifact
+          branch: main
+          event: push
+          workflow_conclusion: success
       - name: 📦 Gen Updater by kachina-builder
         run: |
           cd dist
@@ -135,12 +157,24 @@ jobs:
         run: |
           cd dist
           7z x "BetterGI_v${{ needs.build_dist.outputs.version }}.7z"
-      - name: 📥 Download kachina-builder
+      - name: 📥 Download kachina-builder release
+        if: ${{ github.event.inputs.kachina-channel == 'release' }}
         uses: robinraju/release-downloader@v1.8
         with:
           repository: "YuehaiTeam/kachina-installer"
           latest: true
           fileName: "kachina-builder.exe"
+      - name: 📥 Download kachina-builder dev
+        if: ${{ github.event.inputs.kachina-channel == 'dev' }}
+        uses: dawidd6/action-download-artifact@v8
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          repo: "YuehaiTeam/kachina-installer"
+          workflow: "build.yml"
+          name: artifact
+          branch: main
+          event: push
+          workflow_conclusion: success
       - name: 📥 Download last release
         uses: robinraju/release-downloader@v1.8
         with:
@@ -148,7 +182,42 @@ jobs:
           latest: true
           fileName: "BetterGI_v*.7z"
           out-file-path: 'last'
-      - name: Unpack Last release
+      - name: 📥 Get 2nd and 3rd release
+        id: release_tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $releasesUrl = "https://api.github.com/repos/babalae/better-genshin-impact/releases"
+          $headers = @{
+              "Authorization" = "Bearer $env:GITHUB_TOKEN"
+              "Accept" = "application/vnd.github.v3+json"
+          }
+          $releases = Invoke-RestMethod -Uri $releasesUrl -Headers $headers -Method Get
+          $validReleases = $releases | 
+          Where-Object { -not $_.draft -and -not $_.prerelease } |
+          Sort-Object { [DateTime]$_.published_at } -Descending
+          if ($validReleases.Count -lt 3) {
+              Write-Error "至少需要 3 个正式 Release（当前找到 $($validReleases.Count) 个）"
+              exit 1
+          }
+          "second_release_tag=$($validReleases[1].tag_name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "third_release_tag=$($validReleases[2].tag_name)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+
+      - name: 📥 Download 2nd last release
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "babalae/better-genshin-impact"
+          tag: ${{ steps.release_tags.outputs.second_release_tag }}
+          fileName: "BetterGI_v*.7z"
+          out-file-path: '2nd'
+      - name: 📥 Download 3rd last release
+        uses: robinraju/release-downloader@v1.8
+        with:
+          repository: "babalae/better-genshin-impact"
+          tag: ${{ steps.release_tags.outputs.third_release_tag }}
+          fileName: "BetterGI_v*.7z"
+          out-file-path: '3rd'
+      - name: Unpack releases
         run: |
           cd last
           7z x "BetterGI*.7z" -otemp
@@ -157,10 +226,30 @@ jobs:
           } else {
               Rename-Item -Path ".\temp" -NewName ".\BetterGI"
           }
+          cd ..
+          cd 2nd
+          7z x "BetterGI*.7z" -otemp
+          if (Test-Path -Path ".\temp\BetterGI" -PathType Container) {
+              Move-Item -Path ".\temp\BetterGI" -Destination ".\BetterGI"
+          } else {
+              Rename-Item -Path ".\temp" -NewName ".\BetterGI"
+          }
+          cd ..
+          cd 3rd
+          7z x "BetterGI*.7z" -otemp
+          if (Test-Path -Path ".\temp\BetterGI" -PathType Container) {
+              Move-Item -Path ".\temp\BetterGI" -Destination ".\BetterGI"
+          } else {
+              Rename-Item -Path ".\temp" -NewName ".\BetterGI"
+          }
+          cd ..
+          ls .\last
+          ls .\2nd
+          ls .\3rd
       - name: 📦 Pack kachina-builder
         run: |
           cd dist
-          ..\kachina-builder.exe gen -j 6 -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_dist.outputs.version }} --diff-vers ..\last\BetterGI --diff-ignore *[.txt,.onnx] -u .\BetterGI\BetterGI.update.exe
+          ..\kachina-builder.exe gen -j 6 -i BetterGI -m metadata.json -o hashed -r babalae/bettergi -t ${{ needs.build_dist.outputs.version }} --diff-vers ..\last\BetterGI --diff-vers ..\2nd\BetterGI --diff-vers ..\3rd\BetterGI --diff-ignore *[.txt,.onnx] -u .\BetterGI\BetterGI.update.exe
           ..\kachina-builder.exe pack -c ../kachina.config.json -m metadata.json -d hashed -o BetterGI.Install.${{ needs.build_dist.outputs.version }}.exe
       - uses: actions/upload-artifact@v4
         with:
