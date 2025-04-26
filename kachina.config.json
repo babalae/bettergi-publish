@@ -1,5 +1,5 @@
 {
-    "source": "dfs+packed+https://77.cocogoat.cn/v2/dfs/bgi/BetterGI.Install.exe",
+    "source": "dfs+packed+https://steambird.cocogoat.cn/dfs/bgi/BetterGI.Install.exe",
     "appName": "BetterGI",
     "publisher": "babalae",
     "regName": "BetterGI",
@@ -13,5 +13,5 @@
     "userDataPath": ["${INSTALL_PATH}/User"],
     "extraUninstallPath": ["${INSTALL_PATH}/log"],
     "uacStrategy": "prefer-admin",
-    "runtimes": ["Microsoft.DotNet.DesktopRuntime.8"]
+    "runtimes": ["Microsoft.DotNet.DesktopRuntime.8", "Microsoft.VCRedist.2015+.x64"]
 }
