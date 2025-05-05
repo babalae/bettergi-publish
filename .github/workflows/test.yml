@@ -23,7 +23,8 @@ jobs:
           filetype: local
           mirrorchyan_rid: demo1
           working-directory: downloads/BetterGI_Install/
-          pick_files: '[ ${{ env.files }} ]'
+          filename: "BetterGI.Install.*.exe"
+          extra_zip: true
           version_name: ${{ needs.build_dist.outputs.version }}
           upload_token: ${{ secrets.MirrorChyanUploadToken }}
           auto_channel: false
