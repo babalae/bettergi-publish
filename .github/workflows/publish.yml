@@ -312,7 +312,7 @@ jobs:
         shell: bash
         run: |
           cd downloads/BetterGI_7z
-          7z x BetterGI_v${{  steps.extract_version.outputs.version }}.7z -oun7z
+          7z x BetterGI_v*.7z -oun7z
 
       - name: Upload Zip
         uses: MirrorChyan/uploading-action@v1
