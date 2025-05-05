@@ -18,12 +18,12 @@ jobs:
         if: always()
         uses: MirrorChyan/uploading-action@v1
         env:
-          exec_filename: Hello
+          files: Hello
         with:
           filetype: local
           mirrorchyan_rid: demo1
           working-directory: downloads/BetterGI_Install/
-          pick_files: '[$exec_filename]'
+          pick_files: $files
           version_name: ${{ needs.build_dist.outputs.version }}
           upload_token: ${{ secrets.MirrorChyanUploadToken }}
           auto_channel: false
