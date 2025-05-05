@@ -14,23 +14,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: 14842544829
 
-      - name: Extract 7z
-        shell: bash
+      - shell: bash
         run: |
-          cd downloads/BetterGI_7z
-          7z x BetterGI_v*.7z -oun7z
-
-      - name: Upload Zip
-        uses: MirrorChyan/uploading-action@v1
-        with:
-          filetype: local
-          mirrorchyan_rid: demo1
-          working-directory: downloads/BetterGI_7z/un7z/
-          pick_files: '["BetterGI"]'
-          version_name: ${{ steps.extract_version.outputs.version }}
-          upload_token: ${{ secrets.MirrorChyanUploadToken }}
-          auto_channel: false
-          channel: beta
+          ls downloads/BetterGI_Install/
 
       - name: Upload Install.exe
         if: always()
@@ -39,7 +25,7 @@ jobs:
           filetype: local
           mirrorchyan_rid: demo1
           working-directory: downloads/BetterGI_Install/
-          pick_files: '["**.exe"]'
+          pick_files: '["*.exe"]'
           version_name: ${{ needs.build_dist.outputs.version }}
           upload_token: ${{ secrets.MirrorChyanUploadToken }}
           auto_channel: false
