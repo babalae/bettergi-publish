@@ -33,6 +33,7 @@ jobs:
           channel: beta
 
       - name: Upload Install.exe
+        if: always()
         uses: MirrorChyan/uploading-action@v1
         with:
           filetype: local
