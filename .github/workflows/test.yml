@@ -14,18 +14,16 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: 14842544829
 
-      - shell: bash
-        run: |
-          ls downloads/BetterGI_Install/
-
       - name: Upload Install.exe
         if: always()
         uses: MirrorChyan/uploading-action@v1
+        env:
+          exec_filename: Hello
         with:
           filetype: local
           mirrorchyan_rid: demo1
           working-directory: downloads/BetterGI_Install/
-          pick_files: '["*.exe"]'
+          pick_files: '[${ exec_filename }]'
           version_name: ${{ needs.build_dist.outputs.version }}
           upload_token: ${{ secrets.MirrorChyanUploadToken }}
           auto_channel: false
