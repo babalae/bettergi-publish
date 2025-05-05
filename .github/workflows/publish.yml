@@ -307,6 +307,8 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: downloads
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: 14842544829
 
       - name: Extract 7z
         shell: bash
@@ -318,24 +320,10 @@ jobs:
         uses: MirrorChyan/uploading-action@v1
         with:
           filetype: local
-          mirrorchyan_rid: demo1
+          mirrorchyan_rid: BGI
           working-directory: downloads/BetterGI_7z/un7z/
           pick_files: '["BetterGI"]'
           version_name: ${{ steps.extract_version.outputs.version }}
           upload_token: ${{ secrets.MirrorChyanUploadToken }}
           auto_channel: false
           channel: beta
-
-      - name: Upload Install.exe
-        uses: MirrorChyan/uploading-action@v1
-        with:
-          filetype: local
-          mirrorchyan_rid: demo1
-          working-directory: downloads/BetterGI_Install/
-          pick_files: '["BetterGI.Install.*.exe"]'
-          version_name: ${{ needs.build_dist.outputs.version }}
-          upload_token: ${{ secrets.MirrorChyanUploadToken }}
-          auto_channel: false
-          channel: beta
-          os: win
-          arch: x64
