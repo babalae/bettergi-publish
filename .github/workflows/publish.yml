@@ -154,18 +154,6 @@ jobs:
           name: BetterGI_7z
           path: dist/BetterGI_*.7z
 
-      - name: Upload MirrorChyan
-        uses: MirrorChyan/uploading-action@v1
-        with:
-          filetype: local
-          mirrorchyan_rid: BGI
-          working-directory: dist
-          pick_files: '["BetterGI"]'
-          version_name: ${{ steps.extract_version.outputs.version }}
-          upload_token: ${{ secrets.MirrorChyanUploadToken }}
-          auto_channel: false
-          channel: beta
-
   build_installer:
     runs-on: windows-latest
     needs: [build_dist]
@@ -278,20 +266,6 @@ jobs:
           name: BetterGI_Install
           path: dist/BetterGI.Install.*.exe
 
-      - name: Upload MirrorChyan
-        uses: MirrorChyan/uploading-action@v1
-        with:
-          filetype: local
-          mirrorchyan_rid: BGI
-          working-directory: dist
-          pick_files: '["BetterGI.Install.${{ needs.build_dist.outputs.version }}.exe"]'
-          version_name: ${{ needs.build_dist.outputs.version }}
-          upload_token: ${{ secrets.MirrorChyanUploadToken }}
-          auto_channel: false
-          channel: beta
-          os: win
-          arch: x64
-
   build_setup:
     runs-on: windows-latest
     needs: [build_dist]
@@ -325,3 +299,42 @@ jobs:
         with:
           name: BetterGI_Setup
           path: BetterGI_Setup*.exe
+
+  mirrorchyan_uploading:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: downloads
+
+      - name: Extract 7z
+        shell: bash
+        run: |
+          cd downloads/BetterGI_7z
+          7z x BetterGI_v${{  steps.extract_version.outputs.version }}.7z -oun7z
+
+      - name: Upload Zip
+        uses: MirrorChyan/uploading-action@v1
+        with:
+          filetype: local
+          mirrorchyan_rid: demo1
+          working-directory: downloads/BetterGI_7z/un7z
+          pick_files: '["BetterGI"]'
+          version_name: ${{ steps.extract_version.outputs.version }}
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}
+          auto_channel: false
+          channel: beta
+
+      - name: Upload Install.exe
+        uses: MirrorChyan/uploading-action@v1
+        with:
+          filetype: local
+          mirrorchyan_rid: demo1
+          working-directory: downloads/BetterGI_Install
+          pick_files: '["BetterGI.Install.*.exe"]'
+          version_name: ${{ needs.build_dist.outputs.version }}
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}
+          auto_channel: false
+          channel: beta
+          os: win
+          arch: x64
