@@ -11,6 +11,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: downloads
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: 14842544829
 
       - name: Extract 7z
