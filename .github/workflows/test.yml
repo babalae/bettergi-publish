@@ -1,0 +1,46 @@
+name: test
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  mirrorchyan_uploading:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: downloads
+          run-id: 14842544829
+
+      - name: Extract 7z
+        shell: bash
+        run: |
+          cd downloads/BetterGI_7z
+          7z x BetterGI_v*.7z -oun7z
+
+      - name: Upload Zip
+        uses: MirrorChyan/uploading-action@v1
+        with:
+          filetype: local
+          mirrorchyan_rid: demo1
+          working-directory: downloads/BetterGI_7z/un7z
+          pick_files: '["BetterGI"]'
+          version_name: ${{ steps.extract_version.outputs.version }}
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}
+          auto_channel: false
+          channel: beta
+
+      - name: Upload Install.exe
+        uses: MirrorChyan/uploading-action@v1
+        with:
+          filetype: local
+          mirrorchyan_rid: demo1
+          working-directory: downloads/BetterGI_Install
+          pick_files: '["BetterGI.Install.*.exe"]'
+          version_name: ${{ needs.build_dist.outputs.version }}
+          upload_token: ${{ secrets.MirrorChyanUploadToken }}
+          auto_channel: false
+          channel: beta
+          os: win
+          arch: x64
