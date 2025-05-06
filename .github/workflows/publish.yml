@@ -318,7 +318,7 @@ jobs:
         run: |
           cd downloads/BetterGI_7z
           7z x BetterGI_v*.7z -oun7z
-          mv ../BetterGI_Metadata/metadata.json ./un7z/.metadata.json
+          mv ../BetterGI_Metadata/metadata.json ./un7z/BetterGI/.metadata.json
           
       - name: Upload Zip
         uses: MirrorChyan/uploading-action@v1
