@@ -265,6 +265,10 @@ jobs:
         with:
           name: BetterGI_Install
           path: dist/BetterGI.Install.*.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BetterGI_Metadata
+          path: dist/metadata.json
 
   build_setup:
     runs-on: windows-latest
@@ -314,7 +318,8 @@ jobs:
         run: |
           cd downloads/BetterGI_7z
           7z x BetterGI_v*.7z -oun7z
-
+          mv ../downloads/BetterGI_Metadata/metadata.json ./un7z/.metadata.json
+          
       - name: Upload Zip
         uses: MirrorChyan/uploading-action@v1
         with:
