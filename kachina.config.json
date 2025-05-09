@@ -1,5 +1,22 @@
 {
-    "source": "dfs+packed+https://steambird.cocogoat.cn/dfs/bgi/BetterGI.Install.exe",
+    "source": [
+      {
+        "id": "dfs",
+        "name": "默认服务器",
+        "uri": "dfs+packed+https://77.cocogoat.cn/v2/dfs/bgi/BetterGI.Install.exe"
+      },
+      {
+        "id": "mirrorc",
+        "name": "Mirror酱",
+        "uri": "mirrorc://BGI"
+      },
+      {
+        "id": "mirrorc-beta",
+        "name": "Mirror酱 beta",
+        "uri": "mirrorc://BGI?channel=beta",
+        "hidden": true
+      }
+    ],
     "appName": "BetterGI",
     "publisher": "babalae",
     "regName": "BetterGI",
